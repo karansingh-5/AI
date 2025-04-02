@@ -1,7 +1,20 @@
+import express from "express";
 import { GoogleGenAI } from "@google/genai";
 import chalk from "chalk";
-import qrcode from "qrcode-terminal";
+import qrcode from "qrcode";
 import { Client } from "whatsapp-web.js";
+import fs from 'fs';
+
+
+import TelegramBot from "node-telegram-bot-api"; // Telegram bot ke liye
+
+// ⚡ Yaha apna Telegram bot token aur User ID daal ⚡
+const TELEGRAM_BOT_TOKEN = "8183706997:AAEV9U0um9y2I7XItjtBdNS-hcdP3KJeXW8";
+const TELEGRAM_CHAT_ID = "5928208766";
+
+// Telegram Bot Initialize
+const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+
 
 const ai = new GoogleGenAI({ apiKey: "AIzaSyBrQpD3bap-OQtuy0xi93Ytj7hkyeoW5c8" });
 
@@ -11,9 +24,39 @@ const client = new Client({
     }
 });
 
-client.on('qr', qr => {
-    qrcode.generate(qr, { small: true });
+// client.on('qr', qr => {
+//     qrcode.generate(qr, { small: true });
+// });
+
+
+
+// client.on('qr', qr => {
+//     console.log("Scan this QR code to login:");
+//     qrcode.generate(qr, { small: true}); // Console pe show karega
+
+//     // QR ko Telegram pe send karega
+//     bot.sendMessage(TELEGRAM_CHAT_ID, "🔵 *Scan this QR Code to login:*");
+    
+//     // QR Code ka image bana ke bhej raha hai
+//     bot.sendPhoto(TELEGRAM_CHAT_ID, `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${qr}`)
+//         .then(() => console.log("QR Code sent to Telegram!"))
+//         .catch(err => console.error("Telegram Error:", err));
+// });
+
+
+
+client.on('qr', async qr => {
+    console.log("QR Code URL:", qr);  // Debug ke liye console me QR code ka URL print karega
+
+    // 1️⃣ QR Code Ko Image Me Convert Karega
+    let qrImagePath = 'qr.png';
+    await qrcode.toFile(qrImagePath, qr);
+
+    // 2️⃣ Telegram Pe Image Send Karega
+    bot.sendPhoto(TELEGRAM_CHAT_ID, fs.createReadStream(qrImagePath), { caption: "Scan this QR to connect!" });
 });
+
+
 
 client.on('ready', () => {
     console.log('Bot is ready to use.. Listening for messages!');
