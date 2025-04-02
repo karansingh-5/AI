@@ -5,7 +5,11 @@ import { Client } from "whatsapp-web.js";
 
 const ai = new GoogleGenAI({ apiKey: "AIzaSyBrQpD3bap-OQtuy0xi93Ytj7hkyeoW5c8" });
 
-const client = new Client();
+const client = new Client({
+    puppeteer: {
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    }
+});
 
 client.on('qr', qr => {
     qrcode.generate(qr, { small: true });
